@@ -13,7 +13,9 @@ jobs:
 
     steps:
     - name: Get HMCL release tag
-      run: echo "hmcl_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/huanghongxun/HMCL/releases/latest))" >> $GITHUB_ENV
+      run: |
+        echo "hmcl_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/huanghongxun/HMCL/releases/latest))" >> $GITHUB_ENV
+        echo "local_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/${{ env.GITHUB_ACTION_REPOSITORY }}/releases/latest))" >> $GITHUB_ENV
 
     - uses: actions/checkout@v3
       with:
@@ -27,6 +29,11 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
         java-package: jdk+fx
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: current
 
     - name: Build with Gradle
       run: ./gradlew build
