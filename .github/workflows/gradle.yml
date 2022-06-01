@@ -14,7 +14,10 @@ jobs:
     steps:
       - name: Get HMCL release tag
         run: |
-          echo "hmcl_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/huanghongxun/HMCL/releases/latest))" >> $GITHUB_ENV
+          hmcl_version="$(jq -r .tag_name <<< $(curl https://api.github.com/repos/huanghongxun/HMCL/releases/latest))"
+          hmcl_numerical_version=${hmcl_version#*v}
+          echo "hmcl_version=$hmcl_version" >> $GITHUB_ENV
+          echo "hmcl_numerical_version=$hmcl_numerical_version" >> $GITHUB_ENV
           echo "local_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/${{ env.GITHUB_ACTION_REPOSITORY }}/releases/latest))" >> $GITHUB_ENV
 
       - uses: actions/checkout@v3
@@ -41,8 +44,10 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          hmcl_version='${{ env.hmcl_version }}'
-          VERSION_TYPE=stable BUILD_NUMBER="${hmcl_version##*.}" ./gradlew build
+          hmcl_version='${{ env.hmcl_numerical_version }}'
+          hmcl_version_array=(${hmcl_version//./ })
+          VERSION_TYPE=stable VERSION_ROOT="${hmcl_version_array[0]}.${hmcl_version_array[1]}.${hmcl_version_array[2]}" BUILD_NUMBER="${hmcl_version_array[3]}" \
+          ./gradlew build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
@@ -52,6 +57,7 @@ jobs:
 
       - name: Publish a new release
         uses: softprops/action-gh-release@v1
-        if: ${{ env.local_version }} != ${{ env.hmcl_version }}
+        if: ${{ env.local_version != env.hmcl_version }}
         with:
-          files:
+          files: HMCL/build/libs/HMCL-${{ env.hmcl_numerical_version }}.jar
+          tag_name: ${{ env.hmcl_version }}
