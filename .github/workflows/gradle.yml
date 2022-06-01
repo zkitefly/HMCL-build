@@ -12,9 +12,13 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - name: Get HMCL release tag
+      run: echo "hmcl_version=$(jq -r .tag_name <<< $(curl https://api.github.com/repos/huanghongxun/HMCL/releases/latest))" >> $GITHUB_ENV
+
     - uses: actions/checkout@v3
       with:
         repository: 'huanghongxun/HMCL'
+        ref: ${{ env.hmcl_version }}
         submodules: true
 
     - name: Set up JDK 17
@@ -23,12 +27,12 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
         java-package: jdk+fx
+
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Get short SHA
-      run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: HMCL-${{ env.SHORT_SHA }}
+        name: HMCL-${{ env.hmcl_version }}
         path: HMCL/build/libs
