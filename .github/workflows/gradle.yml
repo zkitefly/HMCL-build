@@ -64,3 +64,4 @@ jobs:
         with:
           files: HMCL/build/libs/HMCL-${{ env.hmcl_numerical_version }}.jar
           tag_name: ${{ env.hmcl_version }}
+          fail_on_unmatched_files: true
