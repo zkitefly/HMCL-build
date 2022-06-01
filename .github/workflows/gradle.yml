@@ -46,6 +46,9 @@ jobs:
         run: |
           hmcl_version='${{ env.hmcl_numerical_version }}'
           hmcl_version_array=(${hmcl_version//./ })
+          reproducible_builds_flags='tasks.withType<AbstractArchiveTask>().configureEach{isPreserveFileTimestamps=false;isReproducibleFileOrder=true}'
+          echo "$reproducible_builds_flags" >> HMCL/build.gradle.kts
+          echo "$reproducible_builds_flags" >> minecraft/libraries/log4j-patch/build.gradle.kts
           VERSION_TYPE=stable VERSION_ROOT="${hmcl_version_array[0]}.${hmcl_version_array[1]}.${hmcl_version_array[2]}" BUILD_NUMBER="${hmcl_version_array[3]}" \
           ./gradlew build
 
