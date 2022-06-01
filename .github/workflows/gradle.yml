@@ -40,10 +40,18 @@ jobs:
           gradle-version: current
 
       - name: Build with Gradle
-        run: VERSION_TYPE=stable ./gradlew build
+        run: |
+          hmcl_version='${{ env.hmcl_version }}'
+          VERSION_TYPE=stable BUILD_NUMBER="${hmcl_version##*.}" ./gradlew build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: HMCL-${{ env.hmcl_version }}
           path: HMCL/build/libs
+
+      - name: Publish a new release
+        uses: softprops/action-gh-release@v1
+        if: ${{ env.local_version }} != ${{ env.hmcl_version }}
+        with:
+          files:
